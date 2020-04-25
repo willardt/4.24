@@ -79,7 +79,7 @@ void Socket::net_connect(const std::string_view addr_name, const int port) const
 	if (const int result = connect(_socket, (const sockaddr*)&server, sizeof(server))) {
 		std::cout << "Socket Connect Error Code -- " << result << '\n';
 	}
-	std::cout << "Connected" << '\n';
+	std::cout << "Connected to " << addr_name << '\n';
 }
 
 void Socket::net_bind(const int port) const {
@@ -161,6 +161,15 @@ Server::~Server() {
 	WSACleanup();
 }
 
+void Server::net_send(const char* data, SOCKET s) {
+	if (s == INVALID_SOCKET) {
+		std::cout << "INVALID SOCKET" << std::endl;
+		return;
+	}
+
+	send(s, data, strlen(data) + 1, 0);
+}
+
 // Puts server in loop till another socket calls net_connect on it
 // Needs to run in seperate thread
 void Server::net_accept() {
@@ -175,11 +184,14 @@ void Server::net_accept() {
 		_mutex.unlock();
 
 		client->thread = std::thread(&Server::net_recieve, this, client);
+		static size_t id = 0;
+		client->id = id++;
 
 		const auto socket_info = get_socket_info(client->socket.get());
 		const auto socket_addr = get_socket_addr(client->socket.get(), socket_info);
 
 		std::cout << "*New Client Connected*" << '\n';
+		fmt_out("id", id, ENDL);
 		fmt_out("Address", socket_addr, ENDL);
 		fmt_out("Port", socket_info.sin_port, ENDL);
 		fmt_out("Family", socket_info.sin_family, ENDL);
@@ -198,6 +210,8 @@ void Server::net_recieve(std::shared_ptr<Client_Socket> client) {
 			fmt_out("Recieved", result, ENDL);
 			std::cout << buf << '\n';
 			// handle msg and respond 
+
+			net_send(buf, client->socket.get());
 		}
 		else {
 			const auto socket_info = get_socket_info(client->socket.get());
@@ -233,6 +247,13 @@ Client::Client(const int af, const int type, const int protocol, const std::stri
 
 Client::~Client() {
 	WSACleanup();
+}
+
+std::string Client::net_recieve() {
+	char buf[MAX_MSG_LEN];
+	const int result = recv(_client.get(), buf, MAX_MSG_LEN, 0);
+	std::cout << result << '\n';
+	return buf;
 }
 
 void Client::net_send(const std::string_view data) {

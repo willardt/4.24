@@ -67,11 +67,12 @@ int main() {
 	*/
 	Server server(AF_INET, SOCK_STREAM, 0);
 
-	std::thread server_connections(&Server::net_accept, &server);
+	std::thread server_thread(&Server::net_accept, &server);
 
 	std::cout << "done" << '\n';
 	system("PAUSE");
 
-	server_connections.detach();
+	server_thread.detach();
+
 	return 0;
 }

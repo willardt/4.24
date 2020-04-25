@@ -36,7 +36,7 @@ private:
 };
 
 struct Client_Socket {
-	int id;
+	size_t id;
 	Socket socket;
 	std::thread thread;
 };
@@ -46,6 +46,7 @@ public:
 	Server(const int af, const int type, const int protocol, const int port = DEFAULT_PORT);
 	~Server();
 
+	void net_send(const char* data, SOCKET s);
 	void net_accept();
 	void net_recieve(std::shared_ptr<Client_Socket> client);
 	void net_respond();
@@ -66,6 +67,7 @@ public:
 	Client(const int af, const int type, const int protocol, const std::string_view server_addr, const int port = DEFAULT_PORT);
 	~Client();
 
+	std::string net_recieve();
 	void net_send(const std::string_view data);
 private:
 	int _port;
