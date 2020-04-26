@@ -8,10 +8,8 @@
 */
 
 #include "Network.h"
-#include <thread>
-
-#define DEFAULT_PORT 1024
-#define DEFAULT_BUFLEN 512
+#include "UDP_Server.h"
+#include "TCP_Server.h"
 
 int main() {
 	/*
@@ -65,9 +63,14 @@ int main() {
 	} while (r_result > 0);
 
 	*/
-	Server server(AF_INET, SOCK_STREAM, 0);
+	TCP_Server server(AF_INET, SOCK_STREAM, 0);
+	std::thread server_thread(&TCP_Server::net_accept, &server);
 
-	std::thread server_thread(&Server::net_accept, &server);
+	/*    UDP
+	UDP_Server server(AF_INET, SOCK_DGRAM, 0);
+
+	std::thread server_thread(&UDP_Server::net_recieve, &server);
+	*/
 
 	std::cout << "done" << '\n';
 	system("PAUSE");

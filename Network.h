@@ -6,74 +6,29 @@
 
 #pragma comment(lib, "Ws2_32.lib")
 
-#include <string_view>
-#include <array>
-#include <vector>
-#include <memory>
-#include <mutex>
+#include <iostream>
+#include <iomanip>
 
 #define MAX_CONNECTIONS 20
 #define DEFAULT_PORT 80
 
-class Socket {
-public:
-	Socket();
-	Socket(const int af, const int type, const int protocol);
-	~Socket();
+#define ENDL '\n'
+#define MAX_MSG_LEN 50
 
-	void net_socket(const int af, const int type, const int protocol);
-	void net_connect(const std::string_view addr_name, const int port) const;
-	void net_bind(const int port) const;
-	void net_listen(const int backlog = SOMAXCONN) const;
-	void net_accept(Socket& socket, sockaddr* addr = nullptr, int* addrlen = nullptr);
-	void net_send(const std::string_view data) const;
-	void net_set_nonblocking();
+inline void fmt_out() {}
 
-	SOCKET get() const;
-private:
-	int _af;
-	SOCKET _socket;
-};
+template<typename _First, typename ..._Rest>
+inline void fmt_out(_First&& first, _Rest&& ...rest) {
+	std::cout << std::setw(20) << std::setfill('.') << std::forward<_First>(first);
+	fmt_out(std::forward<_Rest>(rest)...);
+}
 
-struct Client_Socket {
-	size_t id;
-	Socket socket;
-	std::thread thread;
-};
+sockaddr_in get_socket_info(SOCKET s);
 
-class Server {
-public:
-	Server(const int af, const int type, const int protocol, const int port = DEFAULT_PORT);
-	~Server();
+std::string get_socket_addr(SOCKET s, sockaddr_in socket_addr);
 
-	void net_send(const char* data, SOCKET s);
-	void net_accept();
-	void net_recieve(std::shared_ptr<Client_Socket> client);
-	void net_respond();
-	void shutdown();
-private:
-	std::mutex _mutex;
-	bool _shutdown;
-	bool _pause;
+std::string get_socket_addr(const sockaddr_in& socket_addr);
 
-	int _port;
-	std::vector<std::shared_ptr<Client_Socket>> _clients;
-	Socket _server;
-	WSAData _wsa_data;
-};
-
-class Client {
-public:
-	Client(const int af, const int type, const int protocol, const std::string_view server_addr, const int port = DEFAULT_PORT);
-	~Client();
-
-	std::string net_recieve();
-	void net_send(const std::string_view data);
-private:
-	int _port;
-	Socket _client;
-	WSADATA _wsa_data;
-};
-
+void print_host_address(const char* host_name);
 
 #endif
