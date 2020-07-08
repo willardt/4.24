@@ -63,14 +63,18 @@ int main() {
 	} while (r_result > 0);
 
 	*/
-	TCP_Server server(AF_INET, SOCK_STREAM, 0);
+	TCP_Server server(AF_INET, 0);
 	std::thread server_thread(&TCP_Server::net_accept, &server);
 
 	/*    UDP
-	UDP_Server server(AF_INET, SOCK_DGRAM, 0);
+	UDP_Server server(AF_INET, 0);
 
 	std::thread server_thread(&UDP_Server::net_recieve, &server);
 	*/
+
+	while(1) {
+		
+	}
 
 	std::cout << "done" << '\n';
 	system("PAUSE");

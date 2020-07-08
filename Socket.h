@@ -26,10 +26,17 @@ private:
 	SOCKET _socket;
 };
 
+// TCP connections
 struct Client_Socket {
 	size_t id = 0;
 	Socket socket;
 	std::thread thread;
+};
+
+// UDP connections
+struct Client_Addr {
+	size_t id = 0;
+	sockaddr_in addr;
 };
 
 

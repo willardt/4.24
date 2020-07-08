@@ -10,9 +10,7 @@ Socket::Socket() :
 Socket::Socket(const int af, const int type, const int protocol) :
 	_af(af),
 	_socket(socket(af, type, protocol))
-{
-	net_set_nonblocking();
-}
+{}
 
 Socket::~Socket() {
 	closesocket(_socket);
@@ -21,7 +19,6 @@ Socket::~Socket() {
 void Socket::net_socket(const int af, const int type, const int protocol) {
 	_af = af;
 	_socket = socket(af, type, protocol);
-	net_set_nonblocking();
 }
 
 void Socket::net_connect(const std::string_view addr_name, const int port) const {
@@ -34,7 +31,8 @@ void Socket::net_connect(const std::string_view addr_name, const int port) const
 	ZeroMemory(&server, sizeof(server));
 	inet_pton(_af, addr_name.data(), &server.sin_addr);
 	server.sin_family = _af;
-	server.sin_port = port;
+	server.sin_port = htons(port);
+	
 	if (const int result = connect(_socket, (const sockaddr*)&server, sizeof(server))) {
 		std::cout << "Socket Connect Error Code -- " << WSAGetLastError() << '\n';
 	}
@@ -52,7 +50,8 @@ void Socket::net_bind(const int port) const {
 	sockaddr_in server_addr;
 	ZeroMemory(&server_addr, sizeof(server_addr));
 	server_addr.sin_family = _af;
-	server_addr.sin_port = port;
+	server_addr.sin_port = htons(port);
+	server_addr.sin_addr.S_un.S_addr = INADDR_ANY;
 	if (const int result = bind(_socket, (const sockaddr*)&server_addr, sizeof(server_addr))) {
 		std::cout << "Socket Bind Error Code -- " << WSAGetLastError() << '\n';
 	}
